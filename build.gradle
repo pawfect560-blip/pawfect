@@ -1,10 +1,18 @@
 buildscript {
-    repositories { google() ; mavenCentral() }
-    dependencies { classpath 'com.android.tools.build:gradle:8.2.2' }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:8.2.2'
+    }
 }
 
 allprojects {
-    repositories { google() ; mavenCentral() }
+    repositories {
+        google()
+        mavenCentral()
+    }
 }
 
 apply plugin: 'com.android.application'
@@ -12,11 +20,21 @@ apply plugin: 'com.android.application'
 android {
     namespace 'com.kittu.pawfect'
     compileSdk 34
+    
     defaultConfig {
         applicationId "com.kittu.pawfect"
         minSdk 24
         targetSdk 34
         versionCode 1
         versionName "1.0"
+    }
+
+    // THIS IS THE FIX: Explicitly telling Gradle where the files are
+    sourceSets {
+        main {
+            manifest.srcFile 'app/src/main/AndroidManifest.xml'
+            java.srcDirs = ['app/src/main/java']
+            res.srcDirs = ['app/src/main/res']
+        }
     }
 }
