@@ -5,7 +5,7 @@ import google.generativeai as genai
 # 1. CORE CONFIGURATION
 # ==========================================
 # Replace with your actual key from Google AI Studio
-GOOGLE_API_KEY = "AIzaSyDwvAKkFGeB_0W8kaAn6Si8J2oZsjSu_LM"
+GOOGLE_API_KEY = "AIzaSyBAopfL1pK-TVw4u9EpjNqf8i-1ZgwzZss"
 
 genai.configure(api_key=GOOGLE_API_KEY)
 # Using the stable May 2026 model string
