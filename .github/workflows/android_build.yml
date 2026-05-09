@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      ANDROID_SDK_ROOT: /usr/local/lib/android/sdk
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -27,7 +28,7 @@ jobs:
         run: npm install -g @bubblewrap/cli
 
       - name: Pre-configure Bubblewrap
-        # FORCE the exact paths that exist on GitHub runners
+        # This points to the standard path on GitHub's hosted runners
         run: |
           mkdir -p ~/.bubblewrap
           echo '{
@@ -52,9 +53,11 @@ jobs:
           }' > twa-manifest.json
 
       - name: Build APK
-        # We use 'yes' to handle the SDK license agreement that GitHub won't answer
+        # We use 'yes' and 'CI=true' to force it through the license checks
         run: |
           yes | bubblewrap build --skipSigning
+        env:
+          CI: true
         
       - name: Upload APK
         uses: actions/upload-artifact@v4
