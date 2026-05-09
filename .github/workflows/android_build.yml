@@ -14,7 +14,6 @@ jobs:
           distribution: 'temurin'
 
       - name: Build with Gradle
-        # This command creates a 'Debug' APK which doesn't need a signature
         run: |
           gradle assembleDebug
 
@@ -22,4 +21,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Pawfect-Vet-App
-          path: app/build/outputs/apk/debug/*.apk
+          # We changed the path here to find the file in the new location
+          path: "**/build/outputs/apk/debug/*.apk"
