@@ -1,4 +1,4 @@
-name: Build Android APK (Bubblewrap)
+name: Build Android APK
 on:
   push:
     branches: [ main ]
@@ -8,24 +8,39 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4  # Updated to v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4  # Updated to v4
         with:
-          node-version: 18
+          node-version: 20  # Using a newer Node version for 2026 compatibility
 
-      - name: Install Bubblewrap CLI
+      - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Build APK
-        # This command uses your manifest to wrap the Streamlit URL into an APK
+      - name: Create TWA Config
         run: |
-          bubblewrap init --manifest=https://pawfect-doc-ai.streamlit.app/manifest.json
-          bubblewrap build --skipSigning
+          echo '{
+            "packageId": "com.kittu.pawfect",
+            "host": "pawfect-doc-ai.streamlit.app",
+            "name": "Pawfect Vet AI",
+            "themeColor": "#C0392B",
+            "navigationColor": "#0E1117",
+            "startUrl": "/",
+            "iconUrl": "https://cdn-icons-png.flaticon.com/512/194/194279.png",
+            "maskableIconUrl": "https://cdn-icons-png.flaticon.com/512/194/194279.png",
+            "clockwiseIconUrl": "https://cdn-icons-png.flaticon.com/512/194/194279.png",
+            "shortcuts": [],
+            "generatorApp": "bubblewrap-cli"
+          }' > twa-manifest.json
+
+      - name: Build APK
+        # Accepting terms automatically
+        run: |
+          bubblewrap build --skipSigning --yes
         
       - name: Upload APK
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4  # Updated to v4
         with:
           name: Pawfect-Vet-App
           path: ./*.apk
