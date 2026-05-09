@@ -27,13 +27,12 @@ jobs:
         run: npm install -g @bubblewrap/cli
 
       - name: Pre-configure Bubblewrap
-        # This tells Bubblewrap exactly where Java and Android SDK are
-        # so it NEVER asks the "Do you want to install JDK" question.
+        # FORCE the exact paths that exist on GitHub runners
         run: |
           mkdir -p ~/.bubblewrap
           echo '{
             "jdkPath": "'$JAVA_HOME'",
-            "androidSdkPath": "'$ANDROID_SDK_ROOT'"
+            "androidSdkPath": "/usr/local/lib/android/sdk"
           }' > ~/.bubblewrap/config.json
 
       - name: Create TWA Config
@@ -53,9 +52,9 @@ jobs:
           }' > twa-manifest.json
 
       - name: Build APK
-        # No more prompts! It sees the config and just builds.
+        # We use 'yes' to handle the SDK license agreement that GitHub won't answer
         run: |
-          bubblewrap build --skipSigning --yes
+          yes | bubblewrap build --skipSigning
         
       - name: Upload APK
         uses: actions/upload-artifact@v4
