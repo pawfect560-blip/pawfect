@@ -24,16 +24,15 @@ jobs:
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Manual SDK Setup
-        # We download the specific cmdline-tools Bubblewrap expects
+      - name: Fix Android SDK Pathing
+        # Bubblewrap specifically looks for 'cmdline-tools/latest'
+        # We create a symlink to make the existing SDK match that format
         run: |
-          mkdir -p $HOME/android-sdk/cmdline-tools
-          wget https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip -O tools.zip
-          unzip tools.zip -d $HOME/android-sdk/cmdline-tools
-          mv $HOME/android-sdk/cmdline-tools/cmdline-tools $HOME/android-sdk/cmdline-tools/latest
+          sudo mkdir -p /usr/local/lib/android/sdk/cmdline-tools/latest
+          sudo ln -sf /usr/local/lib/android/sdk/cmdline-tools/tools/* /usr/local/lib/android/sdk/cmdline-tools/latest/ || true
           
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"$HOME/android-sdk\"}" > ~/.bubblewrap/config.json
+          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"/usr/local/lib/android/sdk\"}" > ~/.bubblewrap/config.json
 
       - name: Create TWA Config
         run: |
@@ -52,12 +51,6 @@ jobs:
           }' > twa-manifest.json
 
       - name: Build APK
+        # We use --yes instead of 'yes |' to prevent the Broken Pipe error
         run: |
-          # The 'yes' pipe handles the license prompts for the new SDK
-          yes | bubblewrap build --skipSigning
-        
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: Pawfect-Vet-App
-          path: ./*.apk
+          bubblewrap build --skipSigning --yes
