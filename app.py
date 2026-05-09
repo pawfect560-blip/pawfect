@@ -1,11 +1,12 @@
 import streamlit as st
 import google.generativeai as genai
-
+# Securely get the key from the cloud environment
+import os
+GOOGLE_API_KEY = st.secrets["GOOGLE_API_KEY"]
 # ==========================================
 # 1. CORE CONFIGURATION
 # ==========================================
-# Replace with your actual key from Google AI Studio
-GOOGLE_API_KEY = "AIzaSyBAopfL1pK-TVw4u9EpjNqf8i-1ZgwzZss"
+
 
 genai.configure(api_key=GOOGLE_API_KEY)
 # Using the stable May 2026 model string
