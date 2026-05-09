@@ -1,69 +1,25 @@
-name: Build Android APK
-on:
-  push:
-    branches: [ main ]
+name: Build Native APK
+on: [push]
 
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-
-      - name: Set up Java 17
+      - uses: actions/checkout@v4
+      
+      - name: set up JDK 17
         uses: actions/setup-java@v4
         with:
-          distribution: 'zulu'
           java-version: '17'
+          distribution: 'temurin'
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli
-
-      - name: Force Construct SDK Structure
-        # Bubblewrap fails if it doesn't see 'cmdline-tools/latest/bin'
-        # We find where GitHub keeps the tools and link them into that exact structure
+      - name: Build with Gradle
+        # This command creates a 'Debug' APK which doesn't need a signature
         run: |
-          export REAL_SDK_PATH=$ANDROID_SDK_ROOT
-          mkdir -p $HOME/fake_sdk/cmdline-tools/latest
-          
-          # Link the existing tools into the 'latest' folder Bubblewrap craves
-          ln -s $REAL_SDK_PATH/cmdline-tools/tools/* $HOME/fake_sdk/cmdline-tools/latest/ || true
-          ln -s $REAL_SDK_PATH/platforms $HOME/fake_sdk/platforms || true
-          ln -s $REAL_SDK_PATH/platform-tools $HOME/fake_sdk/platform-tools || true
-          ln -s $REAL_SDK_PATH/build-tools $HOME/fake_sdk/build-tools || true
-          
-          # Inject the config pointing to our custom-mapped SDK
-          mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"$HOME/fake_sdk\"}" > ~/.bubblewrap/config.json
+          gradle assembleDebug
 
-      - name: Create TWA Config
-        run: |
-          echo '{
-            "packageId": "com.kittu.pawfect",
-            "host": "pawfect-doc-ai.streamlit.app",
-            "name": "Pawfect Vet AI",
-            "themeColor": "#C0392B",
-            "navigationColor": "#0E1117",
-            "startUrl": "/",
-            "iconUrl": "https://cdn-icons-png.flaticon.com/512/194/194279.png",
-            "maskableIconUrl": "https://cdn-icons-png.flaticon.com/512/194/194279.png",
-            "clockwiseIconUrl": "https://cdn-icons-png.flaticon.com/512/194/194279.png",
-            "shortcuts": [],
-            "generatorApp": "bubblewrap-cli"
-          }' > twa-manifest.json
-
-      - name: Build APK
-        # --yes handles the license prompts for our newly mapped SDK
-        run: |
-          bubblewrap build --skipSigning --yes
-        
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: Pawfect-Vet-App
-          path: ./*.apk
+          path: app/build/outputs/apk/debug/*.apk
