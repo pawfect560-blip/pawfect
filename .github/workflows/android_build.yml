@@ -6,10 +6,6 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      # Prevents the Node.js 24 warning and forces non-interactive mode
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      CI: true
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -23,15 +19,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 20 # Switching to 20 for better stability with Bubblewrap CLI
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Configure Bubblewrap Paths
-        # This tells bubblewrap exactly where the SDK is before it even tries to build
+      - name: Manual Config Injection
+        # We are creating the hidden folder and writing the JSON manually. 
+        # This prevents the "Do you want to install JDK?" prompt from ever appearing.
         run: |
-          bubblewrap updateConfig --jdkPath="${JAVA_HOME}" --androidSdkPath="${ANDROID_SDK_ROOT}"
+          mkdir -p ~/.bubblewrap
+          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"${ANDROID_SDK_ROOT}\"}" > ~/.bubblewrap/config.json
+          cat ~/.bubblewrap/config.json
 
       - name: Create TWA Config
         run: |
@@ -50,7 +49,7 @@ jobs:
           }' > twa-manifest.json
 
       - name: Build APK
-        # No more 'yes |', we use --yes to accept licenses in a stable way
+        # --yes is crucial here to accept the Android SDK licenses automatically
         run: |
           bubblewrap build --skipSigning --yes
         
