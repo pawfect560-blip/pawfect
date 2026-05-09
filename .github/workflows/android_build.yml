@@ -24,15 +24,22 @@ jobs:
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Fix Android SDK Pathing
-        # Bubblewrap specifically looks for 'cmdline-tools/latest'
-        # We create a symlink to make the existing SDK match that format
+      - name: Force Construct SDK Structure
+        # Bubblewrap fails if it doesn't see 'cmdline-tools/latest/bin'
+        # We find where GitHub keeps the tools and link them into that exact structure
         run: |
-          sudo mkdir -p /usr/local/lib/android/sdk/cmdline-tools/latest
-          sudo ln -sf /usr/local/lib/android/sdk/cmdline-tools/tools/* /usr/local/lib/android/sdk/cmdline-tools/latest/ || true
+          export REAL_SDK_PATH=$ANDROID_SDK_ROOT
+          mkdir -p $HOME/fake_sdk/cmdline-tools/latest
           
+          # Link the existing tools into the 'latest' folder Bubblewrap craves
+          ln -s $REAL_SDK_PATH/cmdline-tools/tools/* $HOME/fake_sdk/cmdline-tools/latest/ || true
+          ln -s $REAL_SDK_PATH/platforms $HOME/fake_sdk/platforms || true
+          ln -s $REAL_SDK_PATH/platform-tools $HOME/fake_sdk/platform-tools || true
+          ln -s $REAL_SDK_PATH/build-tools $HOME/fake_sdk/build-tools || true
+          
+          # Inject the config pointing to our custom-mapped SDK
           mkdir -p ~/.bubblewrap
-          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"/usr/local/lib/android/sdk\"}" > ~/.bubblewrap/config.json
+          echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"$HOME/fake_sdk\"}" > ~/.bubblewrap/config.json
 
       - name: Create TWA Config
         run: |
@@ -51,6 +58,12 @@ jobs:
           }' > twa-manifest.json
 
       - name: Build APK
-        # We use --yes instead of 'yes |' to prevent the Broken Pipe error
+        # --yes handles the license prompts for our newly mapped SDK
         run: |
           bubblewrap build --skipSigning --yes
+        
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: Pawfect-Vet-App
+          path: ./*.apk
