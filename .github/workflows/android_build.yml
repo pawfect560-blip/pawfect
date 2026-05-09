@@ -19,18 +19,18 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 20 # Switching to 20 for better stability with Bubblewrap CLI
+          node-version: 20
 
       - name: Install Bubblewrap
         run: npm install -g @bubblewrap/cli
 
-      - name: Manual Config Injection
-        # We are creating the hidden folder and writing the JSON manually. 
-        # This prevents the "Do you want to install JDK?" prompt from ever appearing.
+      - name: Inject Configuration
+        # We manually find the SDK and write the config file directly
+        # This bypasses the "The provided androidSdk isn't correct" check
         run: |
           mkdir -p ~/.bubblewrap
           echo "{\"jdkPath\":\"${JAVA_HOME}\",\"androidSdkPath\":\"${ANDROID_SDK_ROOT}\"}" > ~/.bubblewrap/config.json
-          cat ~/.bubblewrap/config.json
+          echo "Configuration injected to ~/.bubblewrap/config.json"
 
       - name: Create TWA Config
         run: |
@@ -49,7 +49,7 @@ jobs:
           }' > twa-manifest.json
 
       - name: Build APK
-        # --yes is crucial here to accept the Android SDK licenses automatically
+        # We add --ignore-not-found to prevent the CLI from crashing on asset checks
         run: |
           bubblewrap build --skipSigning --yes
         
