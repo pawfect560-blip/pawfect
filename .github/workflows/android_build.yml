@@ -1,0 +1,31 @@
+name: Build Android APK (Bubblewrap)
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: Install Bubblewrap CLI
+        run: npm install -g @bubblewrap/cli
+
+      - name: Build APK
+        # This command uses your manifest to wrap the Streamlit URL into an APK
+        run: |
+          bubblewrap init --manifest=https://pawfect-doc-ai.streamlit.app/manifest.json
+          bubblewrap build --skipSigning
+        
+      - name: Upload APK
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pawfect-Vet-App
+          path: ./*.apk
