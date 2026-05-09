@@ -6,17 +6,25 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      # Fixes the Node.js 24 warning for 2026
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+      # Prevents scripts from hanging/waiting for user input
+      CI: true
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v4  # Updated to v4
+        uses: actions/checkout@v4
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4  # Updated to v4
+        uses: actions/setup-node@v4
         with:
-          node-version: 20  # Using a newer Node version for 2026 compatibility
+          node-version: 24
 
-      - name: Install Bubblewrap
-        run: npm install -g @bubblewrap/cli
+      - name: Install Bubblewrap and Setup
+        run: |
+          npm install -g @bubblewrap/cli
+          # Pre-create the directory for icons to avoid path errors
+          mkdir -p output
 
       - name: Create TWA Config
         run: |
@@ -35,12 +43,12 @@ jobs:
           }' > twa-manifest.json
 
       - name: Build APK
-        # Accepting terms automatically
+        # The 'yes' pipe handles any hidden license prompts that cause Code 130
         run: |
-          bubblewrap build --skipSigning --yes
+          yes | bubblewrap build --skipSigning
         
       - name: Upload APK
-        uses: actions/upload-artifact@v4  # Updated to v4
+        uses: actions/upload-artifact@v4
         with:
           name: Pawfect-Vet-App
           path: ./*.apk
