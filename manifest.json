@@ -1,0 +1,17 @@
+{
+  "name": "Pawfect Vet AI",
+  "short_name": "VetAI",
+  "start_url": "https://pawfect-doc-ai.streamlit.app/",
+  "display": "standalone",
+  "background_color": "#0E1117",
+  "theme_color": "#C0392B",
+  "description": "Professional AI Veterinary Assistant",
+  "icons": [
+    {
+      "src": "https://cdn-icons-png.flaticon.com/512/194/194279.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
